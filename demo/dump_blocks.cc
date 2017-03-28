@@ -96,10 +96,10 @@ void dump_blocks(char const* filename)
 			    << stdex::string_view(buf, sizeof(buf))
 			    << "\"," << offset << ']';
 
-			offset = file_size + end_of_block;
+			offset = file_size + int64_t(end_of_block);
 		}
 
-		file_size += bs.size();
+		file_size += int64_t(bs.size());
 		bs.clear();
 
 	} while (bundle_is_full);

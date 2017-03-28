@@ -63,7 +63,7 @@ struct rabin_fingerprint : private rabin_polynomial
 			sizeshift = add_byte(sizeshift, 0);
 
 		for (int i = 0; i < 256; i++)
-			U[i] = _polymmult(i, sizeshift, poly);
+			U[i] = _polymmult(uint64_t(i), sizeshift, poly);
 	}
 
 	void process_byte(uint8_t m)

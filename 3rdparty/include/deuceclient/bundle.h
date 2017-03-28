@@ -167,7 +167,7 @@ struct managed_bundle : bundle
 private:
 	size_t unused_blen() const
 	{
-		return capacity() - (epptr_ - gbase());
+		return capacity() - size_t(epptr_ - gbase());
 	}
 
 	bool buffer_is_full() const
@@ -181,8 +181,8 @@ private:
 
 		while (first != last)
 		{
-			algo_.process_byte(*first++);
-			size_t current_size = first - lbp;
+			algo_.process_byte((unsigned char)*first++);
+			auto current_size = size_t(first - lbp);
 
 			if ((first == last and reached_eof) or
 			    algo_.reached_boundary(current_size))

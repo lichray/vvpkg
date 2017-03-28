@@ -401,7 +401,7 @@ auto operator<<(std::basic_ostream<CharT, Traits>& out,
     basic_string_view<CharT, Traits> s) -> decltype(out)
 {
 #if defined(__GLIBCXX__)
-	return __ostream_insert(out, s.data(), s.size());
+	return __ostream_insert(out, s.data(), std::streamsize(s.size()));
 #else
 	typedef std::basic_ostream<CharT, Traits> ostream_type;
 
