@@ -143,7 +143,7 @@ OutIt hexlify_to(std::array<unsigned char, N> md, OutIt it)
 	{
 		// does not work if the source encoding is not
 		// ASCII-compatible
-		return (c > 9) ? c + 'a' - 10 : c + '0';
+		return char((c > 9) ? c + 'a' - 10 : c + '0');
 	};
 
 	std::for_each(md.begin(), md.end(), [&](unsigned char c)

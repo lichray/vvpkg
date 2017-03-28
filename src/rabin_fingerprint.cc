@@ -45,7 +45,7 @@ int __builtin_clzll(unsigned long long mask)
 inline
 int fls64(uint64_t x)
 {
-	return sizeof(x) * 8 - __builtin_clzll(x);
+	return int(sizeof(x)) * 8 - __builtin_clzll(x);
 }
 
 static
