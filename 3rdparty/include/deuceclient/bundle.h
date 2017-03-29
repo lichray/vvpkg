@@ -37,7 +37,7 @@ typedef std::function<size_t(char*, size_t)>	callback;
 struct bundle
 {
 private:
-	typedef std::tuple<size_t, sha1_digest>		block_info;
+	typedef std::tuple<size_t, msg_digest>		block_info;
 	typedef std::vector<block_info>::const_iterator	block_info_iter;
 
 public:
@@ -308,7 +308,7 @@ inline
 void bundle::mark_new_block(size_t blocksize)
 {
 	pos_.push_back(std::make_tuple(size() + blocksize,
-	    hashlib::sha1(egptr(), blocksize).digest()));
+	                               hash(egptr(), blocksize).digest()));
 }
 
 inline
@@ -347,7 +347,7 @@ inline
 size_t bundle::packed_size_of_block_info()
 {
 	// (str 8) + hex + (bin 32)
-	return 2 + (std::tuple_size<sha1_digest>::value * 2) + 5;
+	return 2 + (hash::digest_size * 2) + 5;
 }
 
 }

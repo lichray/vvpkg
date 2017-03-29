@@ -69,7 +69,7 @@ block_arrangement& block_arrangement::operator=(block_arrangement&& other)
 block_arrangement::~block_arrangement()
 {}
 
-void block_arrangement::add(sha1_digest blockid, int64_t offset)
+void block_arrangement::add(msg_digest blockid, int64_t offset)
 {
 	impl_->writer.StartArray();
 	impl_->writer.Hexlify(blockid);

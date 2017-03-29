@@ -83,14 +83,14 @@ void dump_blocks(char const* filename)
 #endif
 		{
 			size_t end_of_block;
-			deuceclient::sha1_digest blockid;
+			deuceclient::msg_digest blockid;
 			std::tie(end_of_block, blockid) = t;
 
 			if (not first_item)
 				std::cout << ',';
 
 			first_item = false;
-			char buf[40];
+			char buf[2 * deuceclient::hash::digest_size];
 			hashlib::detail::hexlify_to(blockid, buf);
 			std::cout << "[\""
 			    << stdex::string_view(buf, sizeof(buf))

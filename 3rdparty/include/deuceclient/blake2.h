@@ -84,9 +84,10 @@ struct blake2b_ctx_st {
 typedef struct blake2s_ctx_st BLAKE2S_CTX;
 typedef struct blake2b_ctx_st BLAKE2B_CTX;
 
-int BLAKE2b_Init(BLAKE2B_CTX *c);
+int BLAKE2b_Init(BLAKE2B_CTX *c, size_t outlen = BLAKE2B_DIGEST_LENGTH);
 int BLAKE2b_Update(BLAKE2B_CTX *c, const void *data, size_t datalen);
-int BLAKE2b_Final(unsigned char *md, BLAKE2B_CTX *c);
+int BLAKE2b_Final(unsigned char *md, BLAKE2B_CTX *c,
+                  size_t outlen = BLAKE2B_DIGEST_LENGTH);
 
 int BLAKE2s_Init(BLAKE2S_CTX *c);
 int BLAKE2s_Update(BLAKE2S_CTX *c, const void *data, size_t datalen);

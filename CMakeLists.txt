@@ -9,8 +9,6 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY build)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY tests)
 set(CMAKE_CXX_STANDARD 14)
 
-find_package(OpenSSL REQUIRED)
-
 if(MINGW)
 	add_definitions(-DMINGW_HAS_SECURE_API)
 endif()
@@ -29,9 +27,6 @@ file(GLOB vvpkg_srcs src/*.cc src/*.cpp)
 file(GLOB tests_srcs tests/*.cc)
 
 add_library(vvpkg ${vvpkg_srcs})
-
-target_include_directories(vvpkg PUBLIC ${OPENSSL_INCLUDE_DIR})
-target_link_libraries(vvpkg ${OPENSSL_CRYPTO_LIBRARIES})
 
 if(BUILD_TESTING)
 	add_executable(run ${tests_srcs})

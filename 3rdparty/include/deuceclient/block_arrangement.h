@@ -27,7 +27,8 @@ namespace rax
 namespace deuceclient
 {
 
-typedef hashlib::sha1::digest_type	sha1_digest;
+typedef hashlib::blake2b_160	hash;
+typedef hash::digest_type	msg_digest;
 
 struct block_arrangement
 {
@@ -37,7 +38,7 @@ struct block_arrangement
 	block_arrangement(block_arrangement&& other);
 	block_arrangement& operator=(block_arrangement&& other);
 
-	void add(sha1_digest blockid, int64_t offset);
+	void add(msg_digest blockid, int64_t offset);
 	void clear();
 
 	stdex::string_view text();

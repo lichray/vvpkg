@@ -17,8 +17,10 @@
 #ifndef _HASHLIB_H
 #define _HASHLIB_H
 
+#if defined(HASHLIB_HAS_OPENSSL)
 #include <openssl/sha.h>
 #include <openssl/md5.h>
+#endif
 
 #include <array>
 #include <string>
@@ -29,12 +31,15 @@
 #include <iosfwd>
 #include <stdex/string_view.h>
 
+#include "blake2.h"
+
 namespace hashlib
 {
 
 namespace detail
 {
 
+#if defined(HASHLIB_HAS_OPENSSL)
 struct sha1_provider
 {
 	typedef SHA_CTX context_type;
@@ -132,6 +137,32 @@ struct md5_provider
 	void final(unsigned char* md, context_type* ctx)
 	{
 		MD5_Final(md, ctx);
+	}
+};
+#endif
+
+struct blake2b_160_provider
+{
+	typedef BLAKE2B_CTX context_type;
+	static const size_t digest_size = 20;
+	static const size_t block_size = BLAKE2B_BLOCKBYTES;
+
+	static
+	void init(context_type* ctx)
+	{
+		BLAKE2b_Init(ctx, digest_size);
+	}
+
+	static
+	void update(context_type* ctx, void const* data, size_t len)
+	{
+		BLAKE2b_Update(ctx, data, len);
+	}
+
+	static
+	void final(unsigned char* md, context_type* ctx)
+	{
+		BLAKE2b_Final(md, ctx, digest_size);
 	}
 };
 
@@ -314,10 +345,13 @@ auto operator<<(std::basic_ostream<CharT, Traits>& out,
 	return out << inserter_type(buf.data(), buf.size());
 }
 
+#if defined(HASHLIB_HAS_OPENSSL)
 typedef hasher<detail::md5_provider>	md5;
 typedef hasher<detail::sha1_provider>	sha1;
 typedef hasher<detail::sha256_provider>	sha256;
 typedef hasher<detail::sha512_provider>	sha512;
+#endif
+typedef hasher<detail::blake2b_160_provider>	blake2b_160;
 
 }
 
