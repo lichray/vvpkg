@@ -40,9 +40,9 @@ private:
 
 	rabin_fingerprint<128> rabinfp_;
 	size_t sub_optimal_size_;
-	size_t avg_;
-	size_t min_;
-	size_t max_;
+	size_t avg_ = 17432;
+	size_t min_ = 14843;
+	size_t max_ = 90406;
 };
 
 inline

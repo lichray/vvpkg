@@ -50,7 +50,6 @@ void dump_blocks(char const* filename)
 #endif
 
 	deuceclient::managed_bundle<rabin_boundary> bs(10 * 1024 * 1024);
-	bs.boundary().set_limits(14843, 17432, 90406);
 
 	int64_t file_size = 0;
 	bool bundle_is_full;
