@@ -4,7 +4,11 @@ enable_testing()
 
 include(CTest)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+if(NOT MSVC)
+	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
+	    ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+endif()
+
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY build)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY build)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY tests)
@@ -33,9 +37,12 @@ file(GLOB sqxx_srcs 3rdparty/src/sqxx/*.cpp)
 add_library(vvpkg ${vvpkg_srcs})
 add_library(sqxx ${sqxx_srcs})
 
-target_include_directories(sqxx INTERFACE ${SQLITE3_INCLUDE_DIRS})
+if(MSVC)
+	target_compile_options(sqxx PRIVATE /wd4800 /wd4099)
+endif()
+
 target_include_directories(sqxx PRIVATE 3rdparty/include/sqxx)
-target_link_libraries(sqxx ${SQLITE3_LIBRARIES})
+target_link_libraries(sqxx sqlite3)
 target_link_libraries(vvpkg sqxx)
 
 if(BUILD_TESTING)

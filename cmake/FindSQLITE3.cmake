@@ -34,3 +34,15 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(SQLITE3 DEFAULT_MSG SQLITE3_LIBRARY SQLITE3_INCLUDE_DIR )
 
 mark_as_advanced(SQLITE3_INCLUDE_DIR SQLITE3_LIBRARY )
+
+if(SQLITE3_FOUND AND NOT TARGET sqlite3)
+	if(SQLITE3_LIBRARY)
+		add_library(sqlite3 UNKNOWN IMPORTED)
+		set_target_properties(sqlite3 PROPERTIES
+		    IMPORTED_LOCATION "${SQLITE3_LIBRARY}")
+	else()
+		add_library(sqlite3 INTERFACE IMPORTED)
+	endif()
+	set_target_properties(sqlite3 PROPERTIES
+	    INTERFACE_INCLUDE_DIRECTORIES "${SQLITE3_INCLUDE_DIR}")
+endif()
