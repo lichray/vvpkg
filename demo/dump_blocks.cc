@@ -1,5 +1,5 @@
 #include <fcntl.h>
-#if defined(WIN32)
+#if defined(_WIN32)
 #include <sys/stat.h>
 #include <io.h>
 #include <share.h>
@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
 
 void dump_blocks(char const* filename)
 {
-#if defined(WIN32)
+#if defined(_WIN32)
 	int fd;
 	_sopen_s(&fd, filename, _O_RDONLY | _O_BINARY , _SH_DENYWR, _S_IREAD);
 #else
@@ -43,7 +43,7 @@ void dump_blocks(char const* filename)
 	if (fd == -1)
 		THROW_ERRNO();
 
-#if defined(WIN32)
+#if defined(_WIN32)
 	defer(_close(fd));
 #else
 	defer(close(fd));
@@ -64,7 +64,7 @@ void dump_blocks(char const* filename)
 		bundle_is_full = bs.consume(
 		    [=](char* p, size_t sz)
 		    {
-#if defined(WIN32)
+#if defined(_WIN32)
 			return _read(fd, p, unsigned(sz));
 #else
 			return read(fd, p, sz);

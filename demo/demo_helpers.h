@@ -18,7 +18,7 @@
 inline
 std::string getenv_or(char const* name, char const* fallback)
 {
-#if defined(WIN32)
+#if defined(_WIN32)
 	size_t sz;
 	getenv_s(&sz, nullptr, 0, name);
 
