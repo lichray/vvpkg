@@ -4,10 +4,13 @@ enable_testing()
 
 include(CTest)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY build)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY build)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY tests)
 set(CMAKE_CXX_STANDARD 14)
+
+find_package(Sqlite3 REQUIRED)
 
 if(MINGW)
 	add_definitions(-DMINGW_HAS_SECURE_API)
@@ -23,10 +26,17 @@ endif()
 include_directories(3rdparty/include)
 include_directories(include)
 
-file(GLOB vvpkg_srcs src/*.cc src/*.cpp)
+file(GLOB vvpkg_srcs src/*.cc)
 file(GLOB tests_srcs tests/*.cc)
+file(GLOB sqxx_srcs 3rdparty/src/sqxx/*.cpp)
 
 add_library(vvpkg ${vvpkg_srcs})
+add_library(sqxx ${sqxx_srcs})
+
+target_include_directories(sqxx INTERFACE ${SQLITE3_INCLUDE_DIRS})
+target_include_directories(sqxx PRIVATE 3rdparty/include/sqxx)
+target_link_libraries(sqxx ${SQLITE3_LIBRARIES})
+target_link_libraries(vvpkg sqxx)
 
 if(BUILD_TESTING)
 	add_executable(run ${tests_srcs})
