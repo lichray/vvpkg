@@ -7,6 +7,12 @@ include(CTest)
 if(NOT MSVC)
 	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 	    ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+elseif(VCPKG_TARGET_TRIPLET MATCHES "x..-windows-static")
+	foreach(flagvar CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+	    CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+		string(REGEX REPLACE "/MD" "/MT" ${flagvar} "${${flagvar}}")
+		string(REGEX REPLACE "/MDd" "/MTd" ${flagvar} "${${flagvar}}")
+	endforeach()
 endif()
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY build)
