@@ -44,7 +44,7 @@ add_library(vvpkg ${vvpkg_srcs})
 add_library(sqxx ${sqxx_srcs})
 
 if(MSVC)
-	target_compile_options(sqxx PRIVATE /wd4800 /wd4099)
+	target_compile_options(sqxx PRIVATE /wd4800)
 endif()
 
 target_include_directories(sqxx PRIVATE 3rdparty/include/sqxx)
