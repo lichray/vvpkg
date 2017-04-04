@@ -7,7 +7,7 @@ namespace vvpkg
 
 struct vfile
 {
-	explicit vfile(std::string path);
+	explicit vfile(std::string path, char const* mode = "r+");
 
 	vfile(vfile&&) noexcept(
 	    std::is_nothrow_move_constructible<std::string>::value);

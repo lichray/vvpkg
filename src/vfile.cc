@@ -25,15 +25,17 @@ namespace vvpkg
 
 struct vfile::impl
 {
-	impl(char const* db)
-	    : conn(db, sqxx::OPEN_CREATE | sqxx::OPEN_READWRITE)
+	impl(char const* db, bool readonly)
+	    : conn(db,
+	           readonly ? sqxx::OPEN_READONLY
+	                    : sqxx::OPEN_CREATE | sqxx::OPEN_READWRITE)
 	{
 	}
 
 	sqxx::connection conn;
 };
 
-vfile::vfile(std::string path) : db_path_(std::move(path))
+vfile::vfile(std::string path, char const* mode) : db_path_(std::move(path))
 {
 	mkdirp(db_path_.data());
 	auto n = db_path_.size();
@@ -43,8 +45,12 @@ vfile::vfile(std::string path) : db_path_(std::move(path))
 	path_ = db_path_;
 	path_.remove_suffix(path_.size() - n);
 
-	impl_.reset(new impl(db_path_.data()));
-	impl_->conn.run(R"(
+	bool readonly = mode == stdex::string_view("r");
+	if (not readonly and mode != stdex::string_view("r+"))
+		throw std::runtime_error{ R"(mode may be "r" or "r+")" };
+	impl_.reset(new impl(db_path_.data(), readonly));
+	if (not readonly)
+		impl_->conn.run(R"(
 	create table if not exists cblocks (
 	    id     blob primary key,
 	    offset integer not null,
