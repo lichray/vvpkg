@@ -9,7 +9,7 @@
 #include <iomanip>
 #include <cstring>
 
-static auto e = std::mt19937(std::random_device()());
+extern std::mt19937 e;
 
 inline
 auto get_random_block() -> std::array<char, 4096>
