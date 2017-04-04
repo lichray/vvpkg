@@ -71,7 +71,7 @@ auto revision::assign_blocks(bundle const& bs) -> std::vector<msg_digest>
 			impl_->manifest.append(std::get<1>(x));
 	});
 
-	impl_->conn.run("begin immediate");
+	impl_->conn.run("begin");
 	for (auto&& x : bs.blocks())
 	{
 		auto&& blockid = std::get<1>(x);
@@ -94,8 +94,10 @@ auto revision::assign_blocks(bundle const& bs) -> std::vector<msg_digest>
 		            raw.length, blockid.data());
 		v.push_back(blockid);
 	}
+	missing.reset();
 
 	cleanup.run();
+	cleanup.reset();
 	assigning.wait();
 
 	return v;

@@ -22,7 +22,7 @@ TEST_CASE("vfile flow")
 
 	vvpkg::vfile f("tmp");
 
-	auto v = [&] {
+	{
 		auto r1 = f.new_revision("r1");
 		vvpkg::unmanaged_bundle bs;
 
@@ -35,9 +35,13 @@ TEST_CASE("vfile flow")
 		// duplicates
 		bs.add_block(blk);
 
-		return r1.assign_blocks(bs);
-	}();
-	REQUIRE(v.size() == 10);
+		auto v = r1.assign_blocks(bs);
+		REQUIRE(v.size() == 10);
+
+		f.merge(v, bs, [](auto, auto) {});
+		v = r1.assign_blocks(bs);
+		REQUIRE(v.empty());
+	}
 
 	using namespace rapidjson;
 
@@ -49,5 +53,5 @@ TEST_CASE("vfile flow")
 	d.ParseStream(fr);
 
 	REQUIRE(d.IsArray());
-	REQUIRE(d.Size() == 11);
+	REQUIRE(d.Size() == 22);
 }

@@ -55,6 +55,7 @@ public:
 
 	void clear();
 
+	stdex::string_view block_at(block_info_iter it) const;
 	size_t size_of_block(block_info_iter it) const;
 	size_t serialized_size_of_block(block_info_iter it) const;
 	void copy_block(block_info_iter it, bundle& bs) const;
@@ -263,6 +264,13 @@ inline
 void bundle::clear()
 {
 	pos_.clear();
+}
+
+inline
+stdex::string_view bundle::block_at(block_info_iter it) const
+{
+	auto blksize = size_of_block(it);
+	return { egptr(*it) - blksize, blksize };
 }
 
 inline
