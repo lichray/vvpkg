@@ -37,6 +37,12 @@ public:
         RAPIDJSON_ASSERT(fp_ != 0);
     }
 
+    ~FileWriteStream()
+    {
+        Flush();
+        ::fclose(fp_);
+    }
+
     void Put(char c) { 
         if (current_ >= bufferEnd_)
             Flush();
@@ -69,6 +75,18 @@ public:
             }
             current_ = buffer_;
         }
+    }
+
+    // Simulating Stack
+    char* Push(size_t count) {
+        RAPIDJSON_ASSERT(count <= size_t(bufferEnd_ - buffer_));
+        auto avail = size_t(bufferEnd_ - current_);
+        if (count > avail) {
+                Flush();
+        }
+        auto p = current_;
+        current_ += count;
+        return p;
     }
 
     // Not implemented

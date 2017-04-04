@@ -1,4 +1,5 @@
 #include "doctest.h"
+#include "testdata.h"
 
 #include <vvpkg/vfile.h>
 #if defined(_WIN32)
@@ -11,10 +12,44 @@
 #endif
 #include <stdex/defer.h>
 
-TEST_CASE("vfile ctor")
+#include <rapidjson/document.h>
+#include <rapidjson/istreamwrapper.h>
+#include <fstream>
+
+namespace deuceclient = rax::deuceclient;
+
+TEST_CASE("vfile flow")
 {
-	defer(_unlink("tmp/vvpkg.db"); _rmdir("tmp"));
+	defer(_unlink("tmp/vvpkg.db"); _unlink("tmp/r1.json"); _rmdir("tmp"));
 
 	vvpkg::vfile f("tmp");
-	auto r1 = f.new_revision("r1");
+
+	auto v = [&] {
+		auto r1 = f.new_revision("r1");
+		deuceclient::unmanaged_bundle bs;
+
+		auto blk = get_random_block();
+		bs.add_block(blk);
+		for (int n = 0; n < 9; ++n)
+		{
+			bs.add_block(get_random_block());
+		}
+		// duplicates
+		bs.add_block(blk);
+
+		return r1.assign_blocks(bs);
+	}();
+	REQUIRE(v.size() == 10);
+
+	using namespace rapidjson;
+
+	std::ifstream fl("tmp/r1.json");
+	REQUIRE(fl.is_open());
+
+	Document d;
+	IStreamWrapper fr(fl);
+	d.ParseStream(fr);
+
+	REQUIRE(d.IsArray());
+	REQUIRE(d.Size() == 11);
 }
