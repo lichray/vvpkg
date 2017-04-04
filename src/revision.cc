@@ -54,8 +54,7 @@ revision& revision::operator=(revision&&) noexcept(
     std::is_nothrow_move_assignable<std::string>::value) = default;
 revision::~revision() = default;
 
-auto revision::assign_blocks(deuceclient::bundle const& bs)
-    -> std::vector<deuceclient::msg_digest>
+auto revision::assign_blocks(bundle const& bs) -> std::vector<msg_digest>
 {
 	static auto staging =
 	    impl_->conn.prepare("insert into newrev values(?)");
@@ -76,8 +75,7 @@ auto revision::assign_blocks(deuceclient::bundle const& bs)
 	for (auto&& x : bs.blocks())
 	{
 		auto&& blockid = std::get<1>(x);
-		staging.bind(0, sqxx::blob(blockid.data(),
-		                           deuceclient::hash::digest_size),
+		staging.bind(0, sqxx::blob(blockid.data(), hash::digest_size),
 		             false);
 		staging.run();
 		staging.reset();
@@ -85,13 +83,13 @@ auto revision::assign_blocks(deuceclient::bundle const& bs)
 	}
 	impl_->conn.run("commit");
 
-	std::vector<deuceclient::msg_digest> v;
+	std::vector<msg_digest> v;
 	missing.run();
 	for (auto rownum : missing)
 	{
 		(void)rownum;
 		auto raw = missing.val<sqxx::blob>(0);
-		deuceclient::msg_digest blockid;
+		msg_digest blockid;
 		std::copy_n(reinterpret_cast<unsigned char const*>(raw.data),
 		            raw.length, blockid.data());
 		v.push_back(blockid);

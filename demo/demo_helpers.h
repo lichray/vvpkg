@@ -1,4 +1,3 @@
-#include <vvpkg/vvpkg.h>
 #include <stdex/defer.h>
 
 #include <cstdlib>

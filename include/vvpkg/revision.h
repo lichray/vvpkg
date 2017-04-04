@@ -5,7 +5,7 @@
 namespace vvpkg
 {
 
-namespace deuceclient = rax::deuceclient;
+using namespace rax::deuceclient;
 
 struct revision
 {
@@ -19,8 +19,7 @@ struct revision
 
 	stdex::string_view id() const { return path_; }
 
-	auto assign_blocks(deuceclient::bundle const& bs)
-	    -> std::vector<deuceclient::msg_digest>;
+	auto assign_blocks(bundle const& bs) -> std::vector<msg_digest>;
 	void finalize_file(int64_t len);
 
 	friend bool operator==(revision const& a, revision const& b) noexcept

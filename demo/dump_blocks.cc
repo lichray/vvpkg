@@ -7,9 +7,9 @@
 #include <unistd.h>
 #endif
 
-#include "demo_helpers.h"
+#include <vvpkg/vvpkg.h>
 
-using namespace rax;
+#include "demo_helpers.h"
 
 void dump_blocks(char const* filename);
 
@@ -49,7 +49,7 @@ void dump_blocks(char const* filename)
 	defer(close(fd));
 #endif
 
-	deuceclient::managed_bundle<rabin_boundary> bs(10 * 1024 * 1024);
+	vvpkg::managed_bundle<rax::rabin_boundary> bs(10 * 1024 * 1024);
 
 	int64_t file_size = 0;
 	bool bundle_is_full;
@@ -82,14 +82,14 @@ void dump_blocks(char const* filename)
 #endif
 		{
 			size_t end_of_block;
-			deuceclient::msg_digest blockid;
+			vvpkg::msg_digest blockid;
 			std::tie(end_of_block, blockid) = t;
 
 			if (not first_item)
 				std::cout << ',';
 
 			first_item = false;
-			char buf[2 * deuceclient::hash::digest_size];
+			char buf[2 * vvpkg::hash::digest_size];
 			hashlib::detail::hexlify_to(blockid, buf);
 			std::cout << "[\""
 			    << stdex::string_view(buf, sizeof(buf))

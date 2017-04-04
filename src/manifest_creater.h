@@ -1,7 +1,5 @@
 #pragma once
 
-#include <deuceclient/block_arrangement.h>
-
 #include <rapidjson/writer.h>
 
 namespace vvpkg
@@ -17,7 +15,8 @@ struct manifest_creater
 		writer_.StartArray();
 	}
 
-	void append(deuceclient::msg_digest const& blockid)
+	template <typename T>
+	void append(T const& blockid)
 	{
 		writer_.Hexlify(blockid);
 	}

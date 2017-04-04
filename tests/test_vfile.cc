@@ -16,8 +16,6 @@
 #include <rapidjson/istreamwrapper.h>
 #include <fstream>
 
-namespace deuceclient = rax::deuceclient;
-
 TEST_CASE("vfile flow")
 {
 	defer(_unlink("tmp/vvpkg.db"); _unlink("tmp/r1.json"); _rmdir("tmp"));
@@ -26,7 +24,7 @@ TEST_CASE("vfile flow")
 
 	auto v = [&] {
 		auto r1 = f.new_revision("r1");
-		deuceclient::unmanaged_bundle bs;
+		vvpkg::unmanaged_bundle bs;
 
 		auto blk = get_random_block();
 		bs.add_block(blk);
