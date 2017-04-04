@@ -1,6 +1,6 @@
 #pragma once
 
-#include <deuceclient/block_arrangement.h>
+#include <deuceclient/bundle.h>
 #include <vector>
 
 namespace vvpkg
@@ -20,7 +20,7 @@ struct revision
 
 	stdex::string_view id() const { return path_; }
 
-	auto assign_blocks(deuceclient::block_arrangement& ba)
+	auto assign_blocks(deuceclient::bundle const& bs)
 	    -> std::vector<deuceclient::msg_digest>;
 	void finalize_file(int64_t len);
 

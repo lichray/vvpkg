@@ -168,7 +168,7 @@ struct blake2b_160_provider
 
 template <size_t N, typename OutIt>
 inline
-OutIt hexlify_to(std::array<unsigned char, N> md, OutIt it)
+OutIt hexlify_to(std::array<unsigned char, N> const& md, OutIt it)
 {
 	auto half_to_hex = [](int c)
 	{
@@ -231,7 +231,7 @@ OutIt unhexlify_to(stdex::string_view hs, OutIt first)
 
 template <size_t N>
 inline
-std::string hexlify(std::array<unsigned char, N> md)
+std::string hexlify(std::array<unsigned char, N> const& md)
 {
 	std::string s;
 	s.resize(N * 2);

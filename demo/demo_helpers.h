@@ -1,10 +1,9 @@
 #include <vvpkg/vvpkg.h>
+#include <stdex/defer.h>
 
 #include <cstdlib>
 #include <iostream>
 #include <system_error>
-
-#include "defer.h"
 
 #if !(defined(_MSC_VER) && _MSC_VER < 1700)
 #define THROW_ERRNO() throw std::system_error(errno, std::system_category())
