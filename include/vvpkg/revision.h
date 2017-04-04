@@ -1,7 +1,6 @@
 #pragma once
 
 #include <deuceclient/bundle.h>
-#include <vector>
 
 namespace vvpkg
 {

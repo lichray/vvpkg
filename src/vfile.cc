@@ -1,6 +1,6 @@
-#include <sqxx/sqxx.hpp>
-
 #include <vvpkg/vfile.h>
+
+#include <sqxx/sqxx.hpp>
 
 #if defined(_WIN32)
 #include <direct.h>

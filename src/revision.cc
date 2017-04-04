@@ -1,7 +1,8 @@
+#include <vvpkg/revision.h>
+
 #include <sqxx/sqxx.hpp>
 
 #include <algorithm>
-#include <vvpkg/revision.h>
 
 namespace vvpkg
 {
