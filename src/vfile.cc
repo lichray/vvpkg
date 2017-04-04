@@ -23,6 +23,16 @@ static void mkdirp(char const* fn)
 namespace vvpkg
 {
 
+struct vfile::impl
+{
+	impl(char const* db)
+	    : conn(db, sqxx::OPEN_CREATE | sqxx::OPEN_READWRITE)
+	{
+	}
+
+	sqxx::connection conn;
+};
+
 vfile::vfile(std::string path) : db_path_(std::move(path))
 {
 	mkdirp(db_path_.data());
@@ -33,14 +43,19 @@ vfile::vfile(std::string path) : db_path_(std::move(path))
 	path_ = db_path_;
 	path_.remove_suffix(path_.size() - n);
 
-	sqxx::connection conn(db_path_,
-	                      sqxx::OPEN_CREATE | sqxx::OPEN_READWRITE);
-	conn.run(R"(
+	impl_.reset(new impl(db_path_.data()));
+	impl_->conn.run(R"(
 	create table if not exists cblocks (
 	    id     blob primary key,
 	    offset integer not null,
 	    size   integer not null
 	) without rowid)");
 }
+
+vfile::vfile(vfile&&) noexcept(
+    std::is_nothrow_move_constructible<std::string>::value) = default;
+vfile& vfile::operator=(vfile&&) noexcept(
+    std::is_nothrow_move_assignable<std::string>::value) = default;
+vfile::~vfile() = default;
 
 }
