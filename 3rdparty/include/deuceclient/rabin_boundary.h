@@ -54,7 +54,7 @@ rabin_boundary::rabin_boundary() :
 inline
 void rabin_boundary::set_limits(size_t min, size_t average, size_t max)
 {
-	BOOST_ASSERT_MSG(min < average and average < max,
+	BOOST_ASSERT_MSG(min < average && average < max,
 	    "average not in (min. max)");
 
 	avg_ = average;

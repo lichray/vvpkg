@@ -90,8 +90,14 @@ auto revision::assign_blocks(bundle const& bs) -> std::vector<msg_digest>
 		(void)rownum;
 		auto raw = missing.val<sqxx::blob>(0);
 		msg_digest blockid;
-		std::copy_n(reinterpret_cast<unsigned char const*>(raw.data),
-		            raw.length, blockid.data());
+		auto p = reinterpret_cast<unsigned char const*>(raw.data);
+#if !defined(_MSC_VER)
+		std::copy_n(p, raw.length, blockid.data());
+#else
+		std::copy_n(p, raw.length,
+		            stdext::make_checked_array_iterator(
+		                blockid.data(), blockid.size()));
+#endif
 		v.push_back(blockid);
 	}
 	missing.reset();
