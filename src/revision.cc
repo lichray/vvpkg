@@ -91,6 +91,8 @@ auto revision::assign_blocks(bundle const& bs) -> std::vector<msg_digest>
 		auto raw = missing.val<sqxx::blob>(0);
 		msg_digest blockid;
 		auto p = reinterpret_cast<unsigned char const*>(raw.data);
+		if (raw.length != int(hash::digest_size))
+			throw std::runtime_error{ "malicious hash size" };
 #if !defined(_MSC_VER)
 		std::copy_n(p, raw.length, blockid.data());
 #else
