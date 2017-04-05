@@ -71,7 +71,7 @@ vfile& vfile::operator=(vfile&&) noexcept(
 vfile::~vfile() = default;
 
 void vfile::merge(std::vector<msg_digest> const& missing, bundle const& bs,
-                  stdex::signature<void(char const*, size_t)> emit)
+                  stdex::signature<void(int64_t, char const*, size_t)> emit)
 {
 	static auto feed =
 	    impl_->conn.prepare("insert into cblocks values(?, ?, ?)");
@@ -97,7 +97,7 @@ void vfile::merge(std::vector<msg_digest> const& missing, bundle const& bs,
 			break;
 
 		auto blk = bs.block_at(it);
-		emit(blk.data(), blk.size());
+		emit(offset, blk.data(), blk.size());
 
 		feed.bind(0, sqxx::blob(id.data(), hash::digest_size), false);
 		feed.bind(1, offset);

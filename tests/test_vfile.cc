@@ -2,6 +2,8 @@
 #include "testdata.h"
 
 #include <vvpkg/vfile.h>
+#include <vvpkg/sync_store.h>
+
 #if defined(_WIN32)
 #include <io.h>
 #include <direct.h>
@@ -18,9 +20,10 @@
 
 TEST_CASE("vfile flow")
 {
-	defer(_unlink("tmp/vvpkg.db"); _unlink("tmp/r1.json"); _rmdir("tmp"));
+	defer(_unlink("tmp/r1.json"));
 
 	vvpkg::vfile f("tmp");
+	vvpkg::sync_store bin("tmp/vvpkg.bin");
 
 	{
 		auto r1 = f.new_revision("r1");
@@ -38,7 +41,7 @@ TEST_CASE("vfile flow")
 		auto v = r1.assign_blocks(bs);
 		REQUIRE(v.size() == 10);
 
-		f.merge(v, bs, [](auto, auto) {});
+		f.merge(v, bs, bin);
 		v = r1.assign_blocks(bs);
 		REQUIRE(v.empty());
 	}
