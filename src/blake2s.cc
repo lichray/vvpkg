@@ -77,11 +77,11 @@ static void blake2s_init_param(BLAKE2S_CTX *S, const BLAKE2S_PARAM *P)
 }
 
 /* Initialize the hashing context.  Always returns 1. */
-int BLAKE2s_Init(BLAKE2S_CTX *c)
+int BLAKE2s_Init(BLAKE2S_CTX *c, size_t outlen)
 {
     BLAKE2S_PARAM P[1];
 
-    P->digest_length = BLAKE2S_DIGEST_LENGTH;
+    P->digest_length = uint8_t(outlen);
     P->key_length    = 0;
     P->fanout        = 1;
     P->depth         = 1;
@@ -246,7 +246,7 @@ int BLAKE2s_Update(BLAKE2S_CTX *c, const void *data, size_t datalen)
  * Calculate the final hash and save it in md.
  * Always returns 1.
  */
-int BLAKE2s_Final(unsigned char *md, BLAKE2S_CTX *c)
+int BLAKE2s_Final(unsigned char *md, BLAKE2S_CTX *c, size_t outlen)
 {
     int i;
 
@@ -255,8 +255,8 @@ int BLAKE2s_Final(unsigned char *md, BLAKE2S_CTX *c)
     memset(c->buf + c->buflen, 0, sizeof(c->buf) - c->buflen);
     blake2s_compress(c, c->buf, c->buflen);
 
-    /* Output full hash to temp buffer */
-    for (i = 0; i < 8; ++i) {
+    /* Output required hash to message digest */
+    for (i = 0; i < int(outlen) / 4; ++i) {
         store32(md + int(sizeof(c->h[i])) * i, c->h[i]);
     }
 

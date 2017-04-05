@@ -21,14 +21,18 @@
 
 #include <memory>
 #include <cstdint>
+#include <type_traits>
+#include <limits>
 
 namespace rax
 {
 namespace deuceclient
 {
 
-typedef hashlib::blake2b_160	hash;
-typedef hash::digest_type	msg_digest;
+using hash =
+    std::conditional_t<(std::numeric_limits<std::uintptr_t>::digits < 64),
+                       hashlib::blake2s_160, hashlib::blake2b_160>;
+using msg_digest = hash::digest_type;
 
 struct block_arrangement
 {

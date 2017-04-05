@@ -166,6 +166,31 @@ struct blake2b_160_provider
 	}
 };
 
+struct blake2s_160_provider
+{
+	typedef BLAKE2S_CTX context_type;
+	static const size_t digest_size = 20;
+	static const size_t block_size = BLAKE2S_BLOCKBYTES;
+
+	static
+	void init(context_type* ctx)
+	{
+		BLAKE2s_Init(ctx, digest_size);
+	}
+
+	static
+	void update(context_type* ctx, void const* data, size_t len)
+	{
+		BLAKE2s_Update(ctx, data, len);
+	}
+
+	static
+	void final(unsigned char* md, context_type* ctx)
+	{
+		BLAKE2s_Final(md, ctx, digest_size);
+	}
+};
+
 template <size_t N, typename OutIt>
 inline
 OutIt hexlify_to(std::array<unsigned char, N> const& md, OutIt it)
@@ -352,6 +377,7 @@ typedef hasher<detail::sha256_provider>	sha256;
 typedef hasher<detail::sha512_provider>	sha512;
 #endif
 typedef hasher<detail::blake2b_160_provider>	blake2b_160;
+typedef hasher<detail::blake2s_160_provider>	blake2s_160;
 
 }
 
