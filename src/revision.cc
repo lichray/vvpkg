@@ -30,8 +30,7 @@ revision::revision(std::string path, std::string const& db_path)
 {
 	impl_->conn.run(R"(
 	create temporary table if not exists newrev (
-	    id blob not null,
-	    foreign key(id) references cblocks(id)
+	    id blob not null
 	))");
 }
 
