@@ -1,8 +1,8 @@
 #pragma once
 
-#include <stdio.h>
+#include "c_file_funcs.h"
+
 #include <memory>
-#include <system_error>
 #include <string>
 
 namespace vvpkg
@@ -36,20 +36,6 @@ struct sync_store
 	}
 
 private:
-	static auto xfopen(char const* fn, char const* mode) -> FILE*
-	{
-#if !defined(_WIN32)
-		auto fp = ::fopen(fn, mode);
-#else
-		FILE* fp;
-		fopen_s(&fp, fn, mode);
-#endif
-		if (fp == nullptr)
-			throw std::system_error(errno, std::system_category());
-
-		return fp;
-	}
-
 	struct deleter
 	{
 		void operator()(FILE* fp) const { ::fclose(fp); }

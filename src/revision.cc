@@ -1,4 +1,5 @@
 #include <vvpkg/revision.h>
+#include <vvpkg/c_file_funcs.h>
 #include "manifest_creater.h"
 
 #include <sqxx/sqxx.hpp>
@@ -10,25 +11,11 @@
 namespace vvpkg
 {
 
-static auto fopen_for_write(char const* fn)
-{
-#if !defined(_WIN32)
-	auto fp = ::fopen(fn, "wb");
-#else
-	FILE* fp;
-	fopen_s(&fp, fn, "wb");
-#endif
-	if (fp == nullptr)
-		throw std::system_error(errno, std::system_category());
-
-	return fp;
-}
-
 struct revision::impl
 {
 	impl(char const* db, char const* fn)
 	    : conn(db, sqxx::OPEN_READWRITE),
-	      manifest(fopen_for_write(fn), buf, sizeof(buf))
+	      manifest(xfopen(fn, "wb"), buf, sizeof(buf))
 	{
 	}
 
