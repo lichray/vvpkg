@@ -7,19 +7,23 @@ namespace vvpkg
 {
 
 template <typename Store>
-struct basic_vfile_packager
+struct basic_repository
 {
-	explicit basic_vfile_packager(std::string path)
-	    : f_(path), store_(std::move(path) + "/vvpkg.bin")
+	template <typename... Args,
+	          std::enable_if_t<
+	              std::is_constructible<vfile, Args...>::value, int> = 0>
+	explicit basic_repository(Args&&... args)
+	    : f_(std::forward<Args>(args)...)
 	{
 	}
 
 	template <typename Bundle, typename Reader>
 	int64_t commit(std::string commitid, Bundle& bs, Reader&& f)
 	{
+		auto r1 = f_.new_revision(std::move(commitid));
+		Store store(f_.id().to_string() + "/vvpkg.bin");
 		int64_t file_size = 0;
 		bool bundle_is_full;
-		auto r1 = f_.new_revision(std::move(commitid));
 
 		do
 		{
@@ -28,7 +32,7 @@ struct basic_vfile_packager
 			if (bs.empty())
 				break;
 
-			f_.merge(r1.assign_blocks(bs), bs, store_);
+			f_.merge(r1.assign_blocks(bs), bs, store);
 			file_size += int64_t(bs.size());
 			bs.clear();
 
@@ -39,9 +43,8 @@ struct basic_vfile_packager
 
 private:
 	vfile f_;
-	Store store_;
 };
 
-using vfile_packager = basic_vfile_packager<sync_store>;
+using repository = basic_repository<sync_store>;
 
 }
