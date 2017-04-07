@@ -17,9 +17,26 @@ struct revision::impl
 	    : conn(db, sqxx::OPEN_READWRITE),
 	      manifest(xfopen(fn, "wb"), buf, sizeof(buf))
 	{
+		conn.run(R"(
+		create temporary table newrev (
+		    id blob not null
+		))");
+
+		staging = conn.prepare("insert into newrev values(?)");
+		missing = conn.prepare(R"(
+		select distinct id
+		  from newrev left join cblocks using(id)
+		 where cblocks.id is null
+		 order by newrev.rowid
+		)");
+		cleanup = conn.prepare("delete from newrev");
 	}
 
 	sqxx::connection conn;
+	sqxx::statement staging;
+	sqxx::statement missing;
+	sqxx::statement cleanup;
+
 	manifest_creater<rapidjson::FileWriteStream> manifest;
 	char buf[4096];
 };
@@ -28,10 +45,6 @@ revision::revision(std::string path, std::string const& db_path)
     : path_(std::move(path)),
       impl_(new impl(db_path.data(), (path_ + ".json").data()))
 {
-	impl_->conn.run(R"(
-	create temporary table newrev (
-	    id blob not null
-	))");
 }
 
 revision::revision(revision&&) noexcept(
@@ -42,16 +55,6 @@ revision::~revision() = default;
 
 auto revision::assign_blocks(bundle const& bs) -> std::vector<msg_digest>
 {
-	static auto staging =
-	    impl_->conn.prepare("insert into newrev values(?)");
-	static auto missing = impl_->conn.prepare(R"(
-	select distinct id
-	  from newrev left join cblocks using(id)
-	 where cblocks.id is null
-	 order by newrev.rowid
-	)");
-	static auto cleanup = impl_->conn.prepare("delete from newrev");
-
 	auto assigning = std::async(std::launch::async, [&] {
 		for (auto&& x : bs.blocks())
 			impl_->manifest.append(std::get<1>(x));
@@ -61,20 +64,20 @@ auto revision::assign_blocks(bundle const& bs) -> std::vector<msg_digest>
 	for (auto&& x : bs.blocks())
 	{
 		auto&& blockid = std::get<1>(x);
-		staging.bind(0, sqxx::blob(blockid.data(), hash::digest_size),
-		             false);
-		staging.run();
-		staging.reset();
-		staging.clear_bindings();
+		impl_->staging.bind(
+		    0, sqxx::blob(blockid.data(), hash::digest_size), false);
+		impl_->staging.run();
+		impl_->staging.reset();
+		impl_->staging.clear_bindings();
 	}
 	impl_->conn.run("commit");
 
 	std::vector<msg_digest> v;
-	missing.run();
-	for (auto rownum : missing)
+	impl_->missing.run();
+	for (auto rownum : impl_->missing)
 	{
 		(void)rownum;
-		auto raw = missing.val<sqxx::blob>(0);
+		auto raw = impl_->missing.val<sqxx::blob>(0);
 		msg_digest blockid;
 		auto p = reinterpret_cast<unsigned char const*>(raw.data);
 		if (raw.length != int(hash::digest_size))
@@ -88,10 +91,10 @@ auto revision::assign_blocks(bundle const& bs) -> std::vector<msg_digest>
 #endif
 		v.push_back(blockid);
 	}
-	missing.reset();
+	impl_->missing.reset();
 
-	cleanup.run();
-	cleanup.reset();
+	impl_->cleanup.run();
+	impl_->cleanup.reset();
 	assigning.wait();
 
 	return v;

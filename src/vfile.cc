@@ -52,9 +52,19 @@ struct vfile::impl
 		create temporary table newfile (
 		    id blob not null
 		))");
+
+		feed = conn.prepare("insert into cblocks values(?, ?, ?)");
+		getsize = conn.prepare(R"(
+		select offset + size from cblocks
+		order by offset desc limit 1
+		)");
+		staging = conn.prepare("insert into newfile values(?)");
 	}
 
 	sqxx::connection conn;
+	sqxx::statement feed;
+	sqxx::statement getsize;
+	sqxx::statement staging;
 };
 
 vfile::vfile(std::string path, char const* mode) : db_path_(std::move(path))
@@ -82,19 +92,14 @@ vfile::~vfile() = default;
 void vfile::merge(std::vector<msg_digest> const& missing, bundle const& bs,
                   stdex::signature<void(int64_t, char const*, size_t)> emit)
 {
-	static auto feed =
-	    impl_->conn.prepare("insert into cblocks values(?, ?, ?)");
-	static auto getsize = impl_->conn.prepare(
-	    "select offset + size from cblocks order by offset desc limit 1");
-
 	auto it = begin(bs.blocks());
 	auto ed = end(bs.blocks());
 
 	impl_->conn.run("begin");
 
-	getsize.run();
-	auto offset = getsize ? getsize.val<int64_t>(0) : 0;
-	getsize.reset();
+	impl_->getsize.run();
+	auto offset = impl_->getsize ? impl_->getsize.val<int64_t>(0) : 0;
+	impl_->getsize.reset();
 
 	for (auto&& id : missing)
 	{
@@ -108,13 +113,14 @@ void vfile::merge(std::vector<msg_digest> const& missing, bundle const& bs,
 		auto blk = bs.block_at(it);
 		emit(offset, blk.data(), blk.size());
 
-		feed.bind(0, sqxx::blob(id.data(), hash::digest_size), false);
-		feed.bind(1, offset);
+		impl_->feed.bind(0, sqxx::blob(id.data(), hash::digest_size),
+		                 false);
+		impl_->feed.bind(1, offset);
 		offset += int(blk.size());
-		feed.bind(2, int(blk.size()));
-		feed.run();
-		feed.reset();
-		feed.clear_bindings();
+		impl_->feed.bind(2, int(blk.size()));
+		impl_->feed.run();
+		impl_->feed.reset();
+		impl_->feed.clear_bindings();
 	}
 
 	impl_->conn.run("commit");
@@ -158,19 +164,17 @@ auto vfile::list(std::string commitid)
 	commitid.insert(0, prefix.data(), prefix.size());
 	commitid.append(".json");
 
-	static auto staging =
-	    impl_->conn.prepare("insert into newfile values(?)");
 	char buf[4096];
 	manifest_parser<rapidjson::FileReadStream> manifest(
 	    xfopen(commitid.data(), "rb"), buf, sizeof(buf));
 	manifest.parse([&](char const* p, size_t sz) {
 		auto blockid = hashlib::unhexlify<hash::digest_size>(
 		    stdex::string_view(p, sz));
-		staging.bind(0, sqxx::blob(blockid.data(), hash::digest_size),
-		             false);
-		staging.run();
-		staging.reset();
-		staging.clear_bindings();
+		impl_->staging.bind(
+		    0, sqxx::blob(blockid.data(), hash::digest_size), false);
+		impl_->staging.run();
+		impl_->staging.reset();
+		impl_->staging.clear_bindings();
 	});
 
 	segments.run();
