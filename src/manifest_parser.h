@@ -3,6 +3,8 @@
 #include <rapidjson/reader.h>
 #include <rapidjson/error/en.h>
 
+#include <type_traits>
+
 namespace vvpkg
 {
 namespace detail
@@ -51,7 +53,9 @@ inline auto make_string_list_handler(F&& f)
 template <typename Stream>
 struct manifest_parser
 {
-	template <typename... Args>
+	template <typename... Args,
+	          std::enable_if_t<
+	              std::is_constructible<Stream, Args...>::value, int> = 0>
 	explicit manifest_parser(Args&&... args)
 	    : ss_(std::forward<Args>(args)...)
 	{

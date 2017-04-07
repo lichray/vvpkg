@@ -2,13 +2,17 @@
 
 #include <rapidjson/writer.h>
 
+#include <type_traits>
+
 namespace vvpkg
 {
 
 template <typename Stream>
 struct manifest_creater
 {
-	template <typename... Args>
+	template <typename... Args,
+	          std::enable_if_t<
+	              std::is_constructible<Stream, Args...>::value, int> = 0>
 	explicit manifest_creater(Args&&... args)
 	    : buffer_(std::forward<Args>(args)...), writer_(buffer_)
 	{
