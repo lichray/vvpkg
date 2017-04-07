@@ -40,7 +40,7 @@ private:
 
 	stdex::string_view path_;
 	std::string db_path_;
-	std::unique_ptr<impl> impl_;
+	std::shared_ptr<impl> impl_;
 };
 
 inline revision vfile::new_revision(std::string commitid)

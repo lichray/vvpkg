@@ -80,7 +80,7 @@ vfile::vfile(std::string path, char const* mode) : db_path_(std::move(path))
 	bool readonly = mode == stdex::string_view("r");
 	if (not readonly and mode != stdex::string_view("r+"))
 		throw std::runtime_error{ R"(mode may be "r" or "r+")" };
-	impl_.reset(new impl(db_path_.data(), readonly));
+	impl_ = std::make_shared<impl>(db_path_.data(), readonly);
 }
 
 vfile::vfile(vfile&&) noexcept(
@@ -179,11 +179,11 @@ auto vfile::list(std::string commitid)
 
 	segments.run();
 
-	return [ q = folly::makeMoveWrapper(segments), this ]() mutable
+	return [ sp = impl_, q = folly::makeMoveWrapper(segments) ]() mutable
 	{
 		if (q->done())
 		{
-			impl_->conn.run("delete from newfile");
+			sp->conn.run("delete from newfile");
 			return std::make_pair(int64_t(), int64_t());
 		}
 
