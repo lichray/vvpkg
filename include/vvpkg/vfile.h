@@ -22,6 +22,8 @@ struct vfile
 	revision new_revision(std::string commitid);
 	void merge(std::vector<msg_digest> const& missing, bundle const& bs,
 	           stdex::signature<void(int64_t, char const*, size_t)> emit);
+	auto list(std::string commitid)
+	    -> std::function<std::pair<int64_t, int64_t>()>;
 
 	friend bool operator==(vfile const& a, vfile const& b) noexcept
 	{

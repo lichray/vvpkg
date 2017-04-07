@@ -1,6 +1,10 @@
 #include <vvpkg/vfile.h>
+#include <vvpkg/c_file_funcs.h>
+#include "manifest_parser.h"
 
 #include <sqxx/sqxx.hpp>
+#include <rapidjson/filereadstream.h>
+#include <folly/MoveWrapper.h>
 
 #if defined(_WIN32)
 #include <direct.h>
@@ -30,6 +34,24 @@ struct vfile::impl
 	           readonly ? sqxx::OPEN_READONLY
 	                    : sqxx::OPEN_CREATE | sqxx::OPEN_READWRITE)
 	{
+		if (not readonly)
+		{
+			conn.run(R"(
+			create table if not exists cblocks (
+			    id     blob primary key,
+			    offset integer not null,
+			    size   integer not null
+			) without rowid)");
+			conn.run(R"(
+			create unique index if not exists size_idx
+			on cblocks(offset)
+			)");
+		}
+
+		conn.run(R"(
+		create temporary table newfile (
+		    id blob not null
+		))");
 	}
 
 	sqxx::connection conn;
@@ -49,19 +71,6 @@ vfile::vfile(std::string path, char const* mode) : db_path_(std::move(path))
 	if (not readonly and mode != stdex::string_view("r+"))
 		throw std::runtime_error{ R"(mode may be "r" or "r+")" };
 	impl_.reset(new impl(db_path_.data(), readonly));
-	if (not readonly)
-	{
-		impl_->conn.run(R"(
-		create table if not exists cblocks (
-		    id     blob primary key,
-		    offset integer not null,
-		    size   integer not null
-		) without rowid)");
-		impl_->conn.run(R"(
-		create unique index if not exists size_idx
-		on cblocks(offset)
-		)");
-	}
 }
 
 vfile::vfile(vfile&&) noexcept(
@@ -109,6 +118,76 @@ void vfile::merge(std::vector<msg_digest> const& missing, bundle const& bs,
 	}
 
 	impl_->conn.run("commit");
+}
+
+auto vfile::list(std::string commitid)
+    -> std::function<std::pair<int64_t, int64_t>()>
+{
+	auto segments = impl_->conn.prepare(R"(
+	with pieces
+	     as (select offset        as off_start,
+			offset + size as off_end,
+			newfile.rowid as j
+		   from newfile join cblocks using(id)
+		  order by newfile.rowid),
+	     segments(off_start, off_end, j, k)
+	     as (select off_start,
+			off_end,
+			j,
+			j as k
+		   from pieces
+		  where j = 1
+		 union all
+		 select a.off_start,
+			a.off_end,
+			a.j,
+			case
+			  when r.off_end = a.off_start
+			  then r.k
+			  else a.j
+			end k
+		   from pieces a join segments r
+		     on a.j = r.j + 1)
+	select min(off_start),
+	       max(off_end)
+	  from segments
+	 group by k
+	)");
+
+	auto prefix = stdex::string_view(db_path_).substr(0, path_.size() + 1);
+	commitid.insert(0, prefix.data(), prefix.size());
+	commitid.append(".json");
+
+	static auto staging =
+	    impl_->conn.prepare("insert into newfile values(?)");
+	char buf[4096];
+	manifest_parser<rapidjson::FileReadStream> manifest(
+	    xfopen(commitid.data(), "rb"), buf, sizeof(buf));
+	manifest.parse([&](char const* p, size_t sz) {
+		auto blockid = hashlib::unhexlify<hash::digest_size>(
+		    stdex::string_view(p, sz));
+		staging.bind(0, sqxx::blob(blockid.data(), hash::digest_size),
+		             false);
+		staging.run();
+		staging.reset();
+		staging.clear_bindings();
+	});
+
+	segments.run();
+
+	return [ q = folly::makeMoveWrapper(segments), this ]() mutable
+	{
+		if (q->done())
+		{
+			impl_->conn.run("delete from newfile");
+			return std::make_pair(int64_t(), int64_t());
+		}
+
+		auto off_start = q->val<int64_t>(0);
+		auto off_end = q->val<int64_t>(1);
+		q->next_row();
+		return std::make_pair(off_start, off_end);
+	};
 }
 
 }

@@ -47,6 +47,11 @@ public:
         Read();
     }
 
+    ~FileReadStream()
+    {
+        ::fclose(fp_);
+    }
+
     Ch Peek() const { return *current_; }
     Ch Take() { Ch c = *current_; Read(); return c; }
     size_t Tell() const { return count_ + static_cast<size_t>(current_ - buffer_); }
@@ -79,6 +84,10 @@ private:
             }
         }
     }
+
+    // Prohibit copy constructor & assignment operator.
+    FileReadStream(const FileReadStream&);
+    FileReadStream& operator=(const FileReadStream&);
 
     std::FILE* fp_;
     Ch *buffer_;

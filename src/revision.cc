@@ -29,7 +29,7 @@ revision::revision(std::string path, std::string const& db_path)
       impl_(new impl(db_path.data(), (path_ + ".json").data()))
 {
 	impl_->conn.run(R"(
-	create temporary table if not exists newrev (
+	create temporary table newrev (
 	    id blob not null
 	))");
 }

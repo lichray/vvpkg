@@ -57,4 +57,21 @@ TEST_CASE("vfile flow")
 
 	REQUIRE(d.IsArray());
 	REQUIRE(d.Size() == 22);
+
+	{
+		auto f = vvpkg::vfile("tmp", "r");
+		auto g = f.list("r1");
+		int64_t file_size = 0;
+
+		for (;;)
+		{
+			auto off = g();
+			if (auto sz = (off.second - off.first))
+				file_size += sz;
+			else
+				break;
+		}
+
+		REQUIRE(file_size == d.Size() * 4096);
+	}
 }
