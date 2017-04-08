@@ -39,7 +39,7 @@ OutputIt sample(ForwardIt first, ForwardIt last, OutputIt d_first,
 
 	static dist_t d;
 
-	Size unsampled = std::distance(first, last);
+	Size unsampled = static_cast<Size>(std::distance(first, last));
 
 	for (n = std::min(n, unsampled); n != 0; ++first)
 	{
@@ -51,6 +51,13 @@ OutputIt sample(ForwardIt first, ForwardIt last, OutputIt d_first,
 	}
 
 	return d_first;
+}
+
+template <typename ForwardIt, typename OutputIt, typename Size>
+inline
+OutputIt sample(ForwardIt first, ForwardIt last, OutputIt d_first, Size n)
+{
+	return sample(first, last, d_first, n, e);
 }
 
 template <typename IntType>

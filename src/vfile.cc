@@ -167,6 +167,7 @@ auto vfile::list(std::string commitid)
 	char buf[4096];
 	manifest_parser<rapidjson::FileReadStream> manifest(
 	    xfopen(commitid.data(), "rb"), buf, sizeof(buf));
+	impl_->conn.run("begin");
 	manifest.parse([&](char const* p, size_t sz) {
 		auto blockid = hashlib::unhexlify<hash::digest_size>(
 		    stdex::string_view(p, sz));
@@ -176,6 +177,7 @@ auto vfile::list(std::string commitid)
 		impl_->staging.reset();
 		impl_->staging.clear_bindings();
 	});
+	impl_->conn.run("commit");
 
 	segments.run();
 
