@@ -36,12 +36,7 @@ struct sync_store
 	}
 
 private:
-	struct deleter
-	{
-		void operator()(FILE* fp) const { ::fclose(fp); }
-	};
-
-	std::unique_ptr<FILE, deleter> fp_;
+	std::unique_ptr<FILE, c_file_deleter> fp_;
 	std::string fn_;
 };
 

@@ -33,6 +33,11 @@ inline FILE* xfopen(wchar_t const* fn, wchar_t const* mode)
 }
 #endif
 
+struct c_file_deleter
+{
+	void operator()(FILE* fp) const { ::fclose(fp); }
+};
+
 inline auto from_c_file(FILE* stream)
 {
 	return [=](char* dst, size_t sz) mutable
