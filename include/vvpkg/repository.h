@@ -51,6 +51,7 @@ struct basic_repository
 		int64_t file_size = 0;
 		auto g = f_.list(std::move(commitid));
 		auto fn = binfile_location();
+
 		// should optimize I/O size for write instead of read
 		auto buflen = buffer_size_for(fn);
 		auto buf = std::make_unique<char[]>(buflen);
@@ -58,6 +59,14 @@ struct basic_repository
 		    xfopen(fn.data(), "rb"));
 		auto p = buf.get();
 		auto ep = p + buflen;
+		auto do_flush = [&] {
+			auto len = size_t(p - buf.get());
+			auto n = std::forward<Writer>(f)(buf.get(), len);
+			if (n != len)
+				throw std::system_error(
+				    errno, std::system_category());
+			p = buf.get();
+		};
 
 		for (;;)
 		{
@@ -65,14 +74,7 @@ struct basic_repository
 			auto sz = off.second - off.first;
 			if (sz == 0)
 				break;
-#if !defined(_WIN32)
-			if (::fseeko(fp.get(), off.first, SEEK_SET) == -1)
-#else
-			if (_fseeki64(fp.get(), off.first, SEEK_SET) == -1)
-#endif
-				throw std::system_error(
-				    errno, std::system_category());
-
+			xfseek(fp.get(), off.first);
 			file_size += sz;
 
 			do
@@ -96,23 +98,12 @@ struct basic_repository
 				sz -= int64_t(n);
 
 				if (p == ep)
-				{
-					auto wrote = std::forward<Writer>(f)(
-					    buf.get(), buflen);
-					if (wrote != buflen)
-						throw std::system_error(
-						    errno,
-						    std::system_category());
-					p = buf.get();
-				}
+					do_flush();
 
 			} while (sz != 0);
 		}
 
-		auto len = size_t(p - buf.get());
-		auto wrote = std::forward<Writer>(f)(buf.get(), len);
-		if (wrote != len)
-			throw std::system_error(errno, std::system_category());
+		do_flush();
 
 		return file_size;
 	}

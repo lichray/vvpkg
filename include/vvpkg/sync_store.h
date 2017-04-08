@@ -21,13 +21,7 @@ struct sync_store
 			else
 			{
 				fp_.reset(xfopen(fn_.data(), "r+b"));
-#if !defined(_WIN32)
-				if (::fseeko(fp_.get(), from, SEEK_SET) == -1)
-#else
-				if (_fseeki64(fp_.get(), from, SEEK_SET) == -1)
-#endif
-					throw std::system_error(
-					    errno, std::system_category());
+				xfseek(fp_.get(), from);
 			}
 		}
 

@@ -38,6 +38,16 @@ struct c_file_deleter
 	void operator()(FILE* fp) const { ::fclose(fp); }
 };
 
+inline void xfseek(FILE* fp, int64_t offset)
+{
+#if !defined(_WIN32)
+	if (::fseeko(fp, offset, SEEK_SET) == -1)
+#else
+	if (_fseeki64(fp, offset, SEEK_SET) == -1)
+#endif
+		throw std::system_error(errno, std::system_category());
+}
+
 inline auto from_c_file(FILE* stream)
 {
 	return [=](char* dst, size_t sz) mutable
