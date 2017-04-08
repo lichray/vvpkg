@@ -81,8 +81,8 @@ vfile::vfile(std::string path, char const* mode) : db_path_(std::move(path))
 	path_ = db_path_;
 	path_.remove_suffix(path_.size() - n);
 
-	bool readonly = mode == stdex::string_view("r");
-	if (not readonly and mode != stdex::string_view("r+"))
+	bool readonly = mode == "r"_sv;
+	if (not readonly and mode != "r+"_sv)
 		throw std::runtime_error{ R"(mode may be "r" or "r+")" };
 	impl_ = std::make_shared<impl>(db_path_.data(), readonly);
 }

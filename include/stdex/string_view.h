@@ -479,6 +479,32 @@ typedef basic_string_view<wchar_t>	wstring_view;
 typedef basic_string_view<char16_t>	u16string_view;
 typedef basic_string_view<char32_t>	u32string_view;
 
+inline namespace literals
+{
+inline namespace string_view_literals
+{
+constexpr string_view operator"" _sv(const char* s, size_t sz)
+{
+	return { s, sz };
+}
+
+constexpr wstring_view operator"" _sv(const wchar_t* s, size_t sz)
+{
+	return { s, sz };
+}
+
+constexpr u16string_view operator"" _sv(const char16_t* s, size_t sz)
+{
+	return { s, sz };
+}
+
+constexpr u32string_view operator"" _sv(char32_t const* s, size_t sz)
+{
+	return { s, sz };
+}
+}
+}
+
 }
 
 #undef noexcept

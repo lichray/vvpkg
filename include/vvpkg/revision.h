@@ -6,6 +6,7 @@ namespace vvpkg
 {
 
 using namespace rax::deuceclient;
+using namespace stdex::literals;
 
 struct revision
 {
