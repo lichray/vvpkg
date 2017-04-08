@@ -57,7 +57,7 @@ template <typename ForwardIt, typename OutputIt, typename Size>
 inline
 OutputIt sample(ForwardIt first, ForwardIt last, OutputIt d_first, Size n)
 {
-	return sample(first, last, d_first, n, e);
+	return ::sample(first, last, d_first, n, e);
 }
 
 template <typename IntType>

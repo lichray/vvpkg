@@ -20,7 +20,9 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY build)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY tests)
 set(CMAKE_CXX_STANDARD 14)
 
-find_package(Sqlite3 REQUIRED)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+find_package(SQLITE3 REQUIRED)
 
 if(MINGW)
 	add_definitions(-DMINGW_HAS_SECURE_API)
@@ -49,7 +51,7 @@ endif()
 
 target_include_directories(sqxx PRIVATE 3rdparty/include/sqxx)
 target_link_libraries(sqxx sqlite3)
-target_link_libraries(vvpkg sqxx)
+target_link_libraries(vvpkg sqxx Threads::Threads)
 
 if(BUILD_TESTING)
 	add_executable(run ${tests_srcs})

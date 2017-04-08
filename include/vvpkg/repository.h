@@ -4,6 +4,7 @@
 #include "sync_store.h"
 
 #if !defined(_WIN32)
+#include <sys/param.h>
 #include <sys/stat.h>
 #endif
 

@@ -413,7 +413,7 @@ auto operator<<(std::basic_ostream<CharT, Traits>& out,
 	try
 	{
 		decltype(out.width()) w = 0;
-		decltype(out.width()) n = s.size();
+		auto n = static_cast<decltype(w)>(s.size());
 
 		if (out.width() > n)
 		{
