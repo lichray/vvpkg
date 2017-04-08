@@ -15,7 +15,7 @@ struct revision::impl
 {
 	impl(char const* db, char const* fn)
 	    : conn(db, sqxx::OPEN_READWRITE),
-	      manifest(xfopen(fn, "wb"), buf, sizeof(buf))
+	      manifest(xfopen_wxb(fn), buf, sizeof(buf))
 	{
 		conn.run(R"(
 		create temporary table newrev (

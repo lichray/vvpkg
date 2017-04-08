@@ -29,15 +29,18 @@ inline int xopen_for_read(char const* filename)
 	return fd;
 }
 
-inline int xopen_for_write(char const* filename)
+inline int xopen_for_write(char const* filename, int excl = false)
 {
 #if defined(_WIN32)
 	int fd;
-	_sopen_s(&fd, filename, _O_CREAT | _O_WRONLY | _O_BINARY, _SH_DENYWR,
-	         _S_IREAD | _S_IWRITE);
+	_sopen_s(&fd, filename,
+	         _O_CREAT | _O_WRONLY | (excl ? _O_EXCL : _O_TRUNC) |
+	             _O_BINARY,
+	         _SH_DENYWR, _S_IREAD | _S_IWRITE);
 #else
-	auto fd = ::open(filename, O_CREAT | O_WRONLY | O_TRUNC,
-	                 S_IRUSR | S_IWUSR | S_IRGRP);
+	auto fd =
+	    ::open(filename, O_CREAT | O_WRONLY | (excl ? O_EXCL : O_TRUNC),
+	           S_IRUSR | S_IWUSR | S_IRGRP);
 #endif
 
 	if (fd == -1)
