@@ -86,32 +86,28 @@ TEST_CASE("revising")
 			THEN("both can be retrieved")
 			{
 				auto repo = vvpkg::repository("tmp", "r");
-				std::stringstream out;
 
-				auto sz1 = repo.checkout(
-				    "rv1", vvpkg::to_stream(out));
-				auto s1 = out.str();
-				out.str("");
-				auto sz2 = repo.checkout(
-				    "rv2", vvpkg::to_stream(out));
-				auto s2 = out.str();
+				auto try_retrieve = [&](auto rev, auto& orig) {
+					std::stringstream out;
+					auto sz = repo.checkout(
+					    rev, vvpkg::to_stream(out));
+					auto ns = out.str();
 
-				REQUIRE(sz1 == s1.size());
-				REQUIRE(sz2 == s2.size());
+					REQUIRE(sz == ns.size());
 
-				size_t j = 0;
-				for (auto&& s : r1)
-				{
-					REQUIRE(s1.substr(j, s.size()) == s);
-					j += s.size();
-				}
+					size_t j = 0;
+					for (auto&& s : orig)
+					{
+						REQUIRE(
+						    stdex::string_view(ns)
+						        .substr(j, s.size()) ==
+						    s);
+						j += s.size();
+					}
+				};
 
-				j = 0;
-				for (auto&& s : r2)
-				{
-					REQUIRE(s2.substr(j, s.size()) == s);
-					j += s.size();
-				}
+				try_retrieve("rv1", r1);
+				try_retrieve("rv2", r2);
 			}
 		}
 	}
