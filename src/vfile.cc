@@ -10,18 +10,22 @@
 #include <direct.h>
 #else
 #include <sys/stat.h>
-#define _mkdir(fn) ::mkdir(fn, 0755)
 #endif
 #include <system_error>
 
 static void mkdirp(char const* fn)
 {
-	errno = 0;
-	_mkdir(fn);
-	if (errno == EEXIST)
-		errno = 0;
-	else if (errno != 0)
-		throw std::system_error(errno, std::system_category());
+#if defined(_WIN32)
+	if (_mkdir(fn) == -1)
+#else
+	if (::mkdir(fn, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) == -1)
+#endif
+	{
+		if (errno == EEXIST)
+			errno = 0;
+		else
+			throw std::system_error(errno, std::system_category());
+	}
 }
 
 namespace vvpkg
