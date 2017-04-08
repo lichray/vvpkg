@@ -10,7 +10,7 @@ int main(int argc, char* argv[])
 	if (argc < 2)
 	{
 		std::cerr << "usage: ./dump_blocks <PATH>\n";
-		exit(1);
+		exit(2);
 	}
 
 	try
@@ -20,6 +20,7 @@ int main(int argc, char* argv[])
 	catch (std::exception& e)
 	{
 		std::cerr << "ERROR: " << e.what() << std::endl;
+		exit(1);
 	}
 }
 

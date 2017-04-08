@@ -62,7 +62,7 @@ struct basic_repository
 		auto do_flush = [&] {
 			auto len = size_t(p - buf.get());
 			auto n = std::forward<Writer>(f)(buf.get(), len);
-			if (n != len)
+			if (n < 0 or size_t(n) != len)
 				throw std::system_error(
 				    errno, std::system_category());
 			p = buf.get();
