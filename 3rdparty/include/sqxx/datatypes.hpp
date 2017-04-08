@@ -6,6 +6,7 @@
 
 #include <utility>
 #include <string>
+#include <array>
 
 namespace sqxx {
 
@@ -13,6 +14,11 @@ struct blob {
 	const void *data;
 	int length;
 	blob(const void *data_arg, int length_arg) : data(data_arg), length(length_arg) {
+	}
+
+	template<size_t N>
+	explicit blob(std::array<unsigned char, N> const& a)
+	    : data(a.data()), length(N) {
 	}
 };
 

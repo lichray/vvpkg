@@ -64,8 +64,7 @@ auto revision::assign_blocks(bundle const& bs) -> std::vector<msg_digest>
 	for (auto&& x : bs.blocks())
 	{
 		auto&& blockid = std::get<1>(x);
-		impl_->staging.bind(
-		    0, sqxx::blob(blockid.data(), hash::digest_size), false);
+		impl_->staging.bind(0, sqxx::blob(blockid), false);
 		impl_->staging.run();
 		impl_->staging.reset();
 		impl_->staging.clear_bindings();

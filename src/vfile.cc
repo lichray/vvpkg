@@ -113,11 +113,10 @@ void vfile::merge(std::vector<msg_digest> const& missing, bundle const& bs,
 		auto blk = bs.block_at(it);
 		emit(offset, blk.data(), blk.size());
 
-		impl_->feed.bind(0, sqxx::blob(id.data(), hash::digest_size),
-		                 false);
+		impl_->feed.bind(0, sqxx::blob(id), false);
 		impl_->feed.bind(1, offset);
-		offset += int(blk.size());
-		impl_->feed.bind(2, int(blk.size()));
+		offset += int64_t(blk.size());
+		impl_->feed.bind(2, int64_t(blk.size()));
 		impl_->feed.run();
 		impl_->feed.reset();
 		impl_->feed.clear_bindings();
@@ -171,8 +170,7 @@ auto vfile::list(std::string commitid)
 	manifest.parse([&](char const* p, size_t sz) {
 		auto blockid = hashlib::unhexlify<hash::digest_size>(
 		    stdex::string_view(p, sz));
-		impl_->staging.bind(
-		    0, sqxx::blob(blockid.data(), hash::digest_size), false);
+		impl_->staging.bind(0, sqxx::blob(blockid), false);
 		impl_->staging.run();
 		impl_->staging.reset();
 		impl_->staging.clear_bindings();
