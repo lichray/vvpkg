@@ -1,13 +1,5 @@
-#include <fcntl.h>
-#if defined(_WIN32)
-#include <sys/stat.h>
-#include <io.h>
-#include <share.h>
-#else
-#include <unistd.h>
-#endif
-
 #include <vvpkg/vvpkg.h>
+#include <vvpkg/fd_funcs.h>
 
 #include "demo_helpers.h"
 
@@ -33,21 +25,8 @@ int main(int argc, char* argv[])
 
 void dump_blocks(char const* filename)
 {
-#if defined(_WIN32)
-	int fd;
-	_sopen_s(&fd, filename, _O_RDONLY | _O_BINARY , _SH_DENYWR, _S_IREAD);
-#else
-	auto fd = open(filename, O_RDONLY);
-#endif
-
-	if (fd == -1)
-		THROW_ERRNO();
-
-#if defined(_WIN32)
-	defer(_close(fd));
-#else
-	defer(close(fd));
-#endif
+	int fd = vvpkg::xopen_for_read(filename);
+	defer(vvpkg::xclose(fd));
 
 	vvpkg::managed_bundle<rax::rabin_boundary> bs(10 * 1024 * 1024);
 
@@ -60,26 +39,14 @@ void dump_blocks(char const* filename)
 
 	do
 	{
-		bundle_is_full = bs.consume(
-		    [=](char* p, size_t sz)
-		    {
-#if defined(_WIN32)
-			return _read(fd, p, unsigned(sz));
-#else
-			return read(fd, p, sz);
-#endif
-		    });
+		bundle_is_full = bs.consume(vvpkg::from_descriptor(fd));
 
 		if (bs.empty())
 			break;
 
 		int64_t offset = file_size;
 
-#if !(defined(_MSC_VER) && _MSC_VER < 1800)
 		for (auto&& t : bs.blocks())
-#else
-		for each (auto&& t in bs.blocks())
-#endif
 		{
 			size_t end_of_block;
 			vvpkg::msg_digest blockid;
@@ -92,8 +59,8 @@ void dump_blocks(char const* filename)
 			char buf[2 * vvpkg::hash::digest_size];
 			hashlib::detail::hexlify_to(blockid, buf);
 			std::cout << "[\""
-			    << stdex::string_view(buf, sizeof(buf))
-			    << "\"," << offset << ']';
+			          << stdex::string_view(buf, sizeof(buf))
+			          << "\"," << offset << ']';
 
 			offset = file_size + int64_t(end_of_block);
 		}

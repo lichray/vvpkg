@@ -2,16 +2,6 @@
 
 #include <cstdlib>
 #include <iostream>
-#include <system_error>
-
-#if !(defined(_MSC_VER) && _MSC_VER < 1700)
-#define THROW_ERRNO() throw std::system_error(errno, std::system_category())
-#else
-#define THROW_ERRNO() do {						\
-	std::error_code ec(errno, std::system_category());		\
-	throw std::system_error(ec, ec.message());			\
-} while(0)
-#endif
 
 inline
 std::string getenv_or(char const* name, char const* fallback)
