@@ -6,6 +6,7 @@
 
 #include <sstream>
 #include <vector>
+#include <stdio.h>
 
 struct byte_per_byte_bundle : vvpkg::bundle
 {
@@ -48,6 +49,8 @@ TEST_CASE("version control flow")
 
 		REQUIRE(file_size == target_file_size);
 		REQUIRE(out.str().size() == file_size);
+
+		::remove("tmp/r2.json");
 	}
 }
 
@@ -108,6 +111,9 @@ TEST_CASE("revising")
 
 				try_retrieve("rv1", r1);
 				try_retrieve("rv2", r2);
+
+				::remove("tmp/rv2.json");
+				::remove("tmp/rv1.json");
 			}
 		}
 	}

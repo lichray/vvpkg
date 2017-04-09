@@ -3,15 +3,6 @@
 
 #include <vvpkg/vfile.h>
 #include <vvpkg/sync_store.h>
-
-#if defined(_WIN32)
-#include <io.h>
-#include <direct.h>
-#else
-#include <unistd.h>
-#define _unlink ::unlink
-#define _rmdir ::rmdir
-#endif
 #include <stdex/defer.h>
 
 #include <rapidjson/document.h>
@@ -20,7 +11,7 @@
 
 TEST_CASE("vfile flow")
 {
-	defer(_unlink("tmp/r1.json"));
+	defer(::remove("tmp/r1.json"));
 
 	vvpkg::vfile f("tmp");
 	vvpkg::sync_store bin("tmp/vvpkg.bin");
