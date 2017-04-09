@@ -29,7 +29,7 @@ void dump_blocks(char const* filename)
 	int fd = vvpkg::xopen_for_read(filename);
 	defer(vvpkg::xclose(fd));
 
-	vvpkg::managed_bundle<rax::rabin_boundary> bs(10 * 1024 * 1024);
+	vvpkg::managed_bundle<vvpkg::rabin_boundary> bs(10 * 1024 * 1024);
 
 	int64_t file_size = 0;
 	bool bundle_is_full;

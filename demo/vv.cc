@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
 void commit(char const* rev, char const* fn)
 {
 	auto repo = vvpkg::repository(".", "r+");
-	vvpkg::managed_bundle<rax::rabin_boundary> bs(10 * 1024 * 1024);
+	vvpkg::managed_bundle<vvpkg::rabin_boundary> bs(10 * 1024 * 1024);
 	int fd = vvpkg::xopen_for_read(fn);
 
 	repo.commit(rev, bs, vvpkg::from_descriptor(fd));

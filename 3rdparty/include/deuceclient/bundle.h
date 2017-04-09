@@ -182,7 +182,7 @@ private:
 
 		while (first != last)
 		{
-			algo_.process_byte((unsigned char)*first++);
+			algo_.process_byte(*first++);
 			auto current_size = size_t(first - lbp);
 
 			if ((first == last and reached_eof) or
