@@ -20,13 +20,13 @@ inline FILE* xfopen(char const* fn, char const* mode)
 	return fp;
 }
 
-extern inline FILE* xfopen_wxb(char const* fn)
+extern FILE* xfopen_wxb(char const* fn);
+
 #if !defined(_WIN32)
+inline FILE* xfopen_wxb(char const* fn)
 {
 	return xfopen(fn, "wxb");
 }
-#else
-    ;
 #endif
 
 #if defined(_WIN32)
