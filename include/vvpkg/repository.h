@@ -3,11 +3,6 @@
 #include "vfile.h"
 #include "sync_store.h"
 
-#if !defined(_WIN32)
-#include <sys/param.h>
-#include <sys/stat.h>
-#endif
-
 namespace vvpkg
 {
 
@@ -51,13 +46,12 @@ struct basic_repository
 	{
 		int64_t file_size = 0;
 		auto g = f_.list(std::move(commitid));
-		auto fn = binfile_location();
 
-		// should optimize I/O size for write instead of read
-		auto buflen = buffer_size_for(fn);
-		auto buf = std::make_unique<char[]>(buflen);
 		std::unique_ptr<FILE, c_file_deleter> fp(
-		    xfopen(fn.data(), "rb"));
+		    xfopen(binfile_location().data(), "rb"));
+		// should optimize I/O size for write instead of read
+		auto buflen = Store::buffer_size_for(fp.get());
+		auto buf = std::make_unique<char[]>(buflen);
 		auto p = buf.get();
 		auto ep = p + buflen;
 		auto do_flush = [&] {
@@ -110,26 +104,6 @@ struct basic_repository
 	}
 
 private:
-	static size_t buffer_size_for(std::string const& fn)
-	{
-		constexpr size_t default_buffer_size = 8192;
-#if defined(_WIN32)
-		return 65536;
-#else
-#if defined(BSD) || defined(__MSYS__)
-		struct ::stat st;
-		int rt = ::stat(fn.data(), &st);
-#else
-		struct ::stat64 st;
-		int rt = ::stat64(fn.data(), &st);
-#endif
-		if (rt == 0 and 0 < st.st_blksize)
-			return size_t(st.st_blksize);
-		else
-			return default_buffer_size;
-#endif
-	}
-
 	std::string binfile_location() const
 	{
 		return f_.id().to_string() + "/vvpkg.bin";
