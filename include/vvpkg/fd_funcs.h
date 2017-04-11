@@ -6,6 +6,7 @@
 #include <io.h>
 #include <share.h>
 #else
+#include <sys/param.h>
 #include <unistd.h>
 #endif
 
@@ -56,6 +57,26 @@ inline int xclose(int fd) noexcept
 	    _close(fd);
 #else
 	    ::close(fd);
+#endif
+}
+
+inline size_t buffer_size_for(int fd) noexcept
+{
+#if defined(_WIN32)
+	return 65536;
+#else
+	constexpr size_t default_buffer_size = 8192;
+#if defined(BSD) || defined(__MSYS__)
+	struct ::stat st;
+	int rt = ::fstat(fd, &st);
+#else
+	struct ::stat64 st;
+	int rt = ::fstat64(fd, &st);
+#endif
+	if (rt == 0 and 0 < st.st_blksize)
+		return size_t(st.st_blksize);
+	else
+		return default_buffer_size;
 #endif
 }
 

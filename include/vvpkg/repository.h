@@ -50,7 +50,7 @@ struct basic_repository
 		std::unique_ptr<FILE, c_file_deleter> fp(
 		    xfopen(binfile_location().data(), "rb"));
 		// should optimize I/O size for write instead of read
-		auto buflen = Store::buffer_size_for(fp.get());
+		auto buflen = buffer_size_for(fp.get());
 		auto buf = std::make_unique<char[]>(buflen);
 		auto p = buf.get();
 		auto ep = p + buflen;

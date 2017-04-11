@@ -29,27 +29,9 @@ struct sync_store
 			throw std::system_error(errno, std::system_category());
 	}
 
-	static size_t buffer_size_for(FILE* fp)
-	{
-#if defined(_WIN32)
-		return 65536;
-#else
-		return buffer_size_for(fileno(fp));
-#endif
-	}
-
-	static size_t buffer_size_for(int fd);
-
 private:
 	std::unique_ptr<FILE, c_file_deleter> fp_;
 	std::string fn_;
 };
-
-#if defined(_WIN32)
-inline size_t sync_store::buffer_size_for(int fd)
-{
-	return 65536;
-}
-#endif
 
 }

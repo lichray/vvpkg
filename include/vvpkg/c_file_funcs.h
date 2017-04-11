@@ -57,6 +57,15 @@ inline void xfseek(FILE* fp, int64_t offset)
 		throw std::system_error(errno, std::system_category());
 }
 
+extern size_t buffer_size_for(FILE* fp) noexcept;
+
+#if defined(_WIN32)
+inline size_t buffer_size_for(FILE* fp) noexcept
+{
+	return 65536;
+}
+#endif
+
 inline auto from_c_file(FILE* stream)
 {
 	return [=](char* dst, size_t sz) mutable
