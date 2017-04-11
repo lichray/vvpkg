@@ -25,7 +25,7 @@ struct sync_store
 			}
 		}
 
-		if (::fwrite(p, 1, sz, fp_.get()) != sz)
+		if (to_c_file(fp_.get())(p, sz) != sz)
 			throw std::system_error(errno, std::system_category());
 	}
 

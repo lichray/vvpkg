@@ -76,7 +76,7 @@ struct basic_repository
 			{
 				auto len =
 				    size_t(std::min<int64_t>(ep - p, sz));
-				auto n = ::fread(p, 1, len, fp.get());
+				auto n = from_c_file(fp.get())(p, len);
 				if (n != len)
 				{
 					if (::ferror(fp.get()))
