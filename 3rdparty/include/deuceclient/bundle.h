@@ -105,8 +105,7 @@ struct managed_bundle : bundle
 	explicit managed_bundle(size_t cap) :
 		bundle(cap),
 		pptr_(pbase()),
-		epptr_(pbase()),
-		needs_reset_(false)
+		epptr_(pbase())
 	{}
 
 	template <typename Reader>
@@ -128,36 +127,46 @@ struct managed_bundle : bundle
 	template <typename Reader>
 	bool consume(Reader&& f, std::error_code& ec)
 	{
-		if (needs_reset_)
-		{
 #if !defined(_MSC_VER)
-			epptr_ = std::move(pptr_, epptr_, pbase());
+		epptr_ = std::move(pptr_, epptr_, pbase());
 #else
-			epptr_ = std::move(pptr_, epptr_,
-			    stdext::make_unchecked_array_iterator(pbase()))
-			    .base();
+		epptr_ =
+		    std::move(pptr_, epptr_,
+		              stdext::make_unchecked_array_iterator(pbase()))
+		        .base();
 #endif
-			pptr_ = pbase();
-			needs_reset_ = false;
-		}
+		pptr_ = pbase();
 
-		BOOST_ASSERT_MSG(not buffer_is_full(),
-		    "buffer size overflow");
+		BOOST_ASSERT_MSG(not buffer_is_full(), "buffer overflow");
 
-		auto len = std::forward<Reader>(f)(epptr_, unused_blen());
+		bool reached_eof = false;
 
-		if (len < 0)
+		for (;;)
 		{
-			ec.assign(errno, std::system_category());
-			return false;
+			auto u = unused_blen();
+			auto n = std::forward<Reader>(f)(epptr_, u);
+
+			if (n < 0)
+			{
+				ec.assign(errno, std::system_category());
+				return false;
+			}
+			if (n == 0)
+			{
+				reached_eof = true;
+				break;
+			}
+			if (u - size_t(n) < 4096)
+			{
+				epptr_ += n;
+				break;
+			}
+
+			epptr_ += n;
 		}
 
-		bool reached_eof = size_t(len) < unused_blen();
-
-		epptr_ += len;
 		pptr_ = split_into_blocks(pptr_, epptr_, reached_eof);
-
-		return needs_reset_ = buffer_is_full();
+		return not reached_eof;
 	}
 
 	Algorithm& boundary()
@@ -205,7 +214,6 @@ private:
 
 	char* pptr_;
 	char* epptr_;
-	bool needs_reset_;
 	Algorithm algo_;
 };
 
