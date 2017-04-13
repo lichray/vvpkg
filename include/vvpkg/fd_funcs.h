@@ -30,6 +30,21 @@ inline int xopen_for_read(char const* filename)
 	return fd;
 }
 
+inline int xopen_for_write_only(char const* filename)
+{
+#if defined(_WIN32)
+	int fd;
+	_sopen_s(&fd, filename, _O_WRONLY | _O_BINARY, _SH_DENYRW, 0);
+#else
+	auto fd = ::open(filename, O_WRONLY);
+#endif
+
+	if (fd == -1)
+		throw std::system_error(errno, std::system_category());
+
+	return fd;
+}
+
 inline int xopen_for_write(char const* filename, int excl = false)
 {
 #if defined(_WIN32)
@@ -58,6 +73,18 @@ inline int xclose(int fd) noexcept
 #else
 	    ::close(fd);
 #endif
+}
+
+inline void xlseek(int fd, int64_t offset)
+{
+#if defined(_WIN32)
+	if (_lseeki64(fd, offset, SEEK_SET) == -1)
+#elif defined(BSD) || defined(__MSYS__)
+	if (::lseek(fd, offset, SEEK_SET) == -1)
+#else
+	if (::lseek64(fd, offset, SEEK_SET) == -1)
+#endif
+		throw std::system_error(errno, std::system_category());
 }
 
 inline size_t buffer_size_for(int fd) noexcept
