@@ -16,6 +16,8 @@ struct rabin_boundary
 	bool reached_boundary(size_t size_read);
 	void reset() { rabinfp_.reset(); }
 
+	size_t exempt_size() const { return min_ - rabinfp_.window_size; }
+
 private:
 	static constexpr uint64_t fingerprint_pt = 0xbfe6b8a5bf378d83;
 	static constexpr uint64_t break_value = 7;

@@ -33,6 +33,7 @@ struct rabin_boundary
 	void reset();
 
 	void set_limits(size_t min, size_t average, size_t max);
+	size_t exempt_size() const;
 
 private:
 	static const uint64_t fingerprint_pt = 0xbfe6b8a5bf378d83;
@@ -60,6 +61,12 @@ void rabin_boundary::set_limits(size_t min, size_t average, size_t max)
 	avg_ = average;
 	min_ = min;
 	max_ = max;
+}
+
+inline
+size_t rabin_boundary::exempt_size() const
+{
+	return min_ - rabinfp_.window_size;
 }
 
 inline
