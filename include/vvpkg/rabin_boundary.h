@@ -18,6 +18,7 @@ struct rabin_boundary
 
 private:
 	static constexpr uint64_t fingerprint_pt = 0xbfe6b8a5bf378d83;
+	static constexpr uint64_t break_value = 7;
 	static constexpr size_t avg_ = 16384;
 	static constexpr size_t min_ = 12288;
 	static constexpr size_t max_ = 98304;
@@ -29,7 +30,8 @@ inline bool rabin_boundary::reached_boundary(size_t size_read)
 {
 	if (size_read == max_)
 		return true;
-	else if (size_read >= min_ and (rabinfp_.value() % avg_ == 0))
+	else if (size_read >= min_ and
+	         (rabinfp_.value() % avg_ == break_value))
 		return true;
 	else
 		return false;
