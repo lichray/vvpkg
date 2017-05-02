@@ -28,7 +28,12 @@ int main(int argc, char* argv[])
 
 void dump_blocks(char const* filename)
 {
-	int fd = (filename == "-"_sv ? 0 : vvpkg::xopen_for_read(filename));
+	int fd = [&] {
+		if (filename == "-"_sv)
+			return vvpkg::xstdin_fileno();
+		else
+			return vvpkg::xopen_for_read(filename);
+	}();
 	defer(vvpkg::xclose(fd));
 
 	vvpkg::managed_bundle<vvpkg::rabin_boundary> bs(10 * 1024 * 1024);

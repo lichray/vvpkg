@@ -65,6 +65,24 @@ inline int xopen_for_write(char const* filename, int excl = false)
 	return fd;
 }
 
+inline int xstdin_fileno()
+{
+#if defined(_WIN32)
+	if (_setmode(0, _O_BINARY) == -1)
+		throw std::system_error(errno, std::system_category());
+#endif
+	return 0;
+}
+
+inline int xstdout_fileno()
+{
+#if defined(_WIN32)
+	if (_setmode(1, _O_BINARY) == -1)
+		throw std::system_error(errno, std::system_category());
+#endif
+	return 1;
+}
+
 inline int xclose(int fd) noexcept
 {
 	return
