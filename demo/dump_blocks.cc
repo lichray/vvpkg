@@ -5,6 +5,8 @@
 
 void dump_blocks(char const* filename);
 
+using namespace stdex::literals;
+
 int main(int argc, char* argv[])
 {
 	if (argc < 2)
@@ -26,7 +28,7 @@ int main(int argc, char* argv[])
 
 void dump_blocks(char const* filename)
 {
-	int fd = vvpkg::xopen_for_read(filename);
+	int fd = (filename == "-"_sv ? 0 : vvpkg::xopen_for_read(filename));
 	defer(vvpkg::xclose(fd));
 
 	vvpkg::managed_bundle<vvpkg::rabin_boundary> bs(10 * 1024 * 1024);
