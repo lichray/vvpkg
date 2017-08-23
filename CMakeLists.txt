@@ -55,6 +55,8 @@ if(USE_SYSTEM_SQLITE3)
 	target_link_libraries(sqxx sqlite3)
 else()
 	add_library(sqxx ${sqxx_srcs} 3rdparty/src/sqlite3.c)
+	set_source_files_properties(3rdparty/src/sqlite3.c PROPERTIES
+	    COMPILE_DEFINITIONS SQLITE_OMIT_LOAD_EXTENSION)
 	target_include_directories(sqxx PRIVATE 3rdparty/include/sqlite3)
 endif()
 
