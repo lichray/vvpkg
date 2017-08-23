@@ -6,7 +6,7 @@
 
 #include "datatypes.hpp"
 
-typedef struct Mem sqlite3_value;
+typedef struct sqlite3_value sqlite3_value;
 
 namespace sqxx {
 
