@@ -191,20 +191,17 @@ private:
 
 		while (first != last)
 		{
-			auto c = *first++;
+			auto p = first++;
 			auto current_size = size_t(first - lbp);
 
-			if (current_size <= algo_.exempt_size())
-			{
-				if (first == last and reached_eof)
-					goto new_block;
-			}
-			else
-			{
-				algo_.process_byte(c);
+			if (first == last and reached_eof)
+				goto new_block;
 
-				if ((first == last and reached_eof) or
-				    algo_.reached_boundary(current_size))
+			if (algo_.exempt_size() < current_size)
+			{
+				algo_.process_byte(*p);
+
+				if (algo_.reached_boundary(current_size))
 				new_block:
 				{
 					mark_new_block(current_size);
