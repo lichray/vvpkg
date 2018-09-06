@@ -40,6 +40,7 @@ struct vfile::impl
 	{
 		if (not readonly)
 		{
+			conn.run("pragma journal_mode = WAL");
 			conn.run(R"(
 			create table if not exists cblocks (
 			    id     blob primary key,
